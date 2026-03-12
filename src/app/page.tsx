@@ -1,39 +1,36 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useRef } from "react";
+import { GameLoop } from "@/game/engine/GameLoop";
 
 export default function Home() {
-  const [gameStarted, setGameStarted] = useState(false);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const gameRef = useRef<GameLoop | null>(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+
+    const game = new GameLoop(canvas);
+    gameRef.current = game;
+    game.start();
+
+    return () => {
+      game.destroy();
+      gameRef.current = null;
+    };
+  }, []);
 
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white">
-      {!gameStarted ? (
-        <div className="flex flex-col items-center gap-8">
-          <h1 className="text-6xl font-bold tracking-tight">WebGame</h1>
-          <p className="text-xl text-zinc-400">Ready to play?</p>
-          <button
-            onClick={() => setGameStarted(true)}
-            className="rounded-lg bg-white px-8 py-3 text-lg font-semibold text-black transition-transform hover:scale-105 active:scale-95"
-          >
-            Start Game
-          </button>
-        </div>
-      ) : (
-        <div className="flex flex-col items-center gap-4">
-          <canvas
-            id="gameCanvas"
-            width={800}
-            height={600}
-            className="rounded-lg border border-zinc-800 bg-zinc-950"
-          />
-          <button
-            onClick={() => setGameStarted(false)}
-            className="text-sm text-zinc-500 hover:text-white transition-colors"
-          >
-            Back to Menu
-          </button>
-        </div>
-      )}
-    </div>
+    <canvas
+      ref={canvasRef}
+      style={{
+        display: "block",
+        width: "100vw",
+        height: "100vh",
+        cursor: "crosshair",
+        imageRendering: "pixelated",
+      }}
+    />
   );
 }
